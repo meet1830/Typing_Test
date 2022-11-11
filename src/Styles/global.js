@@ -1,6 +1,4 @@
 import { createGlobalStyle } from "styled-components";
-// placing it at the top of the App.js file, the styles will be applied to all the components after it
-// writing normal css only but it is served using styled components using global styles
 
 export const GlobalStyles = createGlobalStyle`
     *, *::after, *::before {
@@ -62,5 +60,36 @@ export const GlobalStyles = createGlobalStyle`
 
     .incorrect {
         color: red;
+    }
+
+    // implementing cursor
+    .current {
+        border-left: 1px solid;
+        animation: blinking 2s infinite;
+        animation-timing-function: ease;
+
+        // blinking animation
+        @keyframes blinking {
+            0% {border-left-color: #fff;}
+            25% {border-left-color: black;}
+            50% {border-left-color: #fff;}
+            75% {border-left-color: black;}
+            100% {border-left-color: #fff;}
+        }
+    }
+
+    .right {
+        border-right: 1px solid;
+        animation: blinkingRight 2s infinite;
+        animation-timing-function: ease;
+
+        // blinking animation
+        @keyframes blinkingRight {
+            0% {border-right-color: #fff;}
+            25% {border-right-color: black;}
+            50% {border-right-color: #fff;}
+            75% {border-right-color: black;}
+            100% {border-right-color: #fff;}
+        }
     }
 `;

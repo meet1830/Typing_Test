@@ -1,11 +1,9 @@
 import { GlobalStyles } from "./Styles/global";
 import TypingBox from "./Components/TypingBox";
 
-// importing random words into randomWords variable
 const randomWords = require('random-words');
 
 function App() {
-  // generating random words
   const words = randomWords(100);
 
   return (
