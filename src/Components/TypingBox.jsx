@@ -1,28 +1,78 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { useState } from "react";
 import { createRef } from "react";
 import { useEffect } from "react";
 import { useRef } from "react";
+import { useTestMode } from "../Context/TestMode";
+import Stats from "./Stats";
+import UpperMenu from "./UpperMenu";
 
-const TypingBox = ({ words }) => {
+var randomWords = require('random-words'); 
+
+const TypingBox = () => {
   const [currWordIndex, setCurrWordIndex] = useState(0);
   const [currCharIndex, setCurrCharIndex] = useState(0);
-  // state for timer functionality
   const [countDown, setCountDown] = useState(15);
   const [testStart, setTestStart] = useState(false);
   const [testOver, setTestOver] = useState(false);
 
   const inputTextRef = useRef(null);
 
-  const wordSpanRef = Array(words.length)
-    .fill(0)
-    .map((i) => createRef(null));
+  const {testTime} = useTestMode();
+  const [intervalId, setIntervalId] = useState(null);
+
+  // to find wpm
+  // can count the correct words typed while refering - query selector it in space logic
+  // other method - can decide at the change of color
+  // going with the second method
+  const [correctChars, setCorrectChars] = useState(0);
+
+  // to find accuracy
+  // check this when switching between words - at logic space
+  // same logic as above method 1
+  const [correctWords, setCorrectWords] = useState(0);
+
+  // the words array will be a state
+  const [wordsArray, setWordsArray] = useState(() => {
+    return randomWords(100);
+    // can initialize random words with a value like 100 or can add a callback function
+  })
+
+  // layer of optimization
+  // usememo - callback func as first parameter and useeffect as second same as useeffect
+  // similar to useEffect - when dependency changes it runs. butt useeffect also runs when the component is mounted, but usememo runs only when it is initialized and offers a bit of optimization on top of it
+  const words = useMemo(() => {
+    return wordsArray;
+    // this is how wordsarray is initialized
+  }, [wordsArray]);
+
+  // also initialize wordspanref using usememo
+  const wordSpanRef = useMemo(() => {
+    // dependency is words array so when wordsarray changes, words changes and then wordspanref changes
+    // so wordspanref is not created beforehand only when it changes it is created, so no undefined error 
+    return Array(words.length).fill(0).map((i) => createRef(null));
+  }, [words]);
+
+  // const wordSpanRef = Array(words.length)
+  //   .fill(0)
+  //   .map((i) => createRef(null));
+
+  // memoization means caching some value so that it does not gets evaluated again. so usememo caches the return value. so we think that some func will run on its own and arbitrarily then we use usememo. so value does not recalculate and saves time
+
+  // from reset func
+  const resetWordSpanRefClassNames = () => {
+    wordSpanRef.map(i =>{ 
+      Array.from(i.current.childNodes).map(j => {
+        j.className = 'char';
+      })
+    });
+    // nodelist does not have map function hence array.from. convert it to array
+    // now call this function in reset function
+    // to remove colors
+    wordSpanRef[0].current.childNodes[0].className = "char current";
+  }
 
   const handleOnKeyDown = (e) => {
-    // starting the timer when user starts typing
-    // startTimer();
-    // but if user types second char then timer is called again it all accumulates
-    // hence create a state for that
     if (!testStart) {
       startTimer();
       setTestStart(true);
@@ -34,22 +84,21 @@ const TypingBox = ({ words }) => {
     // logic for pressing spacebar - if user enters spacebar
     // just after declaring allchildrenspans, because will give error - not defined innertext if wrote after comparing function
     if (e.keyCode === 32) {
-      setCurrWordIndex(currWordIndex + 1);
-      setCurrCharIndex(0);
+      // for accuracy
+      // const incorrectChars = wordSpanRef[currWordIndex].current.querySelectorAll('.incorrect');
+      // an array which contains all incorrect chars
+      // dont use this as if user types space in middle of the word then also the word is correct.
+      const correctChar = wordSpanRef[currWordIndex].current.querySelectorAll('.correct');
+      if (correctChar.length === allChildrenSpans.length) {
+        // correct typed === total words to type
+        // then update the state
+        setCorrectWords(correctWords + 1);
+      }
 
       // logic for removing cursor from the curr word
       // remove the right cursor for prev word when we move on to the next word
       if (allChildrenSpans.length <= currCharIndex) {
-        // here two possibilites
-        // classname = 'char correct right' or 'char incorrect right'
-        // can use if else here
-        // but more efficient way using replace classname
-        // or can use classlist
         allChildrenSpans[currCharIndex - 1].classList.remove("right");
-
-        // allChildrenSpans[currCharIndex - 1].className = allChildrenSpans[currCharIndex - 1].className.replace("right", "");
-
-        // will work only for the current word but since the function will invoke for the every word individually, it will work here
       } else {
         // current cursor should move to the next word, and also current cursor should get removed if hit space between the word
         allChildrenSpans[currCharIndex].className = allChildrenSpans[
@@ -60,6 +109,9 @@ const TypingBox = ({ words }) => {
       // add cursor to the next word
       wordSpanRef[currWordIndex + 1].current.childNodes[0].className =
         "char current";
+
+      setCurrWordIndex(currWordIndex + 1);
+      setCurrCharIndex(0);
 
       return;
     }
@@ -107,28 +159,67 @@ const TypingBox = ({ words }) => {
 
     // compare
     if (e.key === allChildrenSpans[currCharIndex].innerText) {
-      // change the classname for styling
       allChildrenSpans[currCharIndex].className = "char correct";
+      
+      // for wpm
+      // counting correct chars
+      // then through function calculating wpm
+      setCorrectChars(correctChars + 1);
     } else {
-      // change styling
       allChildrenSpans[currCharIndex].className = "char incorrect";
     }
 
-    // update currcharindex to next char of curr word
     setCurrCharIndex(currCharIndex + 1);
-
-    // move cursor with the typing
-    // allChildrenSpans[currCharIndex + 1].className = 'char current';
-
-    // now after the cursor has finished the last char of currword, it does not display any cursor. it should display cursor on the right of the last char (before space for next word). but gives error in console that index out of bound hence defined right class in styles. if cursor not pointing at last char then display normal left cursor
     if (currCharIndex + 1 === allChildrenSpans.length) {
       allChildrenSpans[currCharIndex].className += " right";
-      // just adding classname instead of '=' because want classnames of color to stay and override or else last char will not have any color
-      // allChildrenSpans[currCharIndex].className = 'char right';
     } else {
       allChildrenSpans[currCharIndex + 1].className = "char current";
     }
   };
+
+  // changing the countdown value
+  // every time test time changes, change the value in countdown
+  useEffect(() => {
+    // setCountDown(testTime);
+    // putting this in resetTest function and calling resetTest func here
+    resetTest();
+  }, [testTime]);
+
+  const calculateWPM = () => {
+    // return using the formula
+    return Math.round((correctChars / 5) / (testTime / 60));
+    // pass this in the stats as prop
+  }
+
+  const calculateAccuracy = () => {
+    // currwordindex = here total words typed - if at first index then typed 1 word
+    return Math.round((correctWords / currWordIndex) * 100);
+  }
+
+  // when clicked on one of the three timers in between a game then the whole thing should reset, colors should go away
+  const resetTest = () => {
+    setCurrCharIndex(0);
+    setCurrWordIndex(0);
+    setTestStart(false);
+    setTestOver(false);
+    // also when clicked on, timer should not automatically start
+    // hence create a state for that and clear setinterval using interval id 
+    clearInterval(intervalId);
+    setCountDown(testTime);
+
+    // after this just add new words and clear the whole thing
+    // for this whole wordspanref should change and words prop will change
+    // hence becomes complex and hence use usememo here
+    // removing words prop from here and not also not calling words now from app.js
+    // will do this inside this file only and not get it as a prop
+    let random = randomWords(100);
+    setWordsArray(random);
+    // now words are new every time we click on any timer 
+    // typed styles remain same
+    // we have changed the references but ref classes are still the same. if we change the value then ref is still present at same place. so how to change classnames
+    // for this have to manually iterate over the row span and change the usememo
+    resetWordSpanRefClassNames();
+  }
 
   useEffect(() => {
     focusInput();
@@ -144,10 +235,9 @@ const TypingBox = ({ words }) => {
   const startTimer = () => {
     const intervalId = setInterval(timer, 1000);
 
+    setIntervalId(intervalId);
+
     function timer() {
-      // setCountDown(countDown - 1);
-      // this will not work as setinterval does not execute function in the call stack it does it elsewhere hence have to use prev state of the state for that
-      // passing callback in state gives prev state of it
       setCountDown((prevCountDown) => {
         // to stop the countDown
         if (prevCountDown === 1) {
@@ -163,11 +253,8 @@ const TypingBox = ({ words }) => {
 
   return (
     <div>
-      <h1>{countDown}</h1>
-      {/* display typing box till timer running, else display test over */}
-      {testOver ? (
-        <h1>Test Over!</h1>
-      ) : (
+      <UpperMenu countDown={countDown} />
+      {testOver ? ( <Stats wpm={calculateWPM()} accuracy={calculateAccuracy()} /> ) : (
         <div className="type-box" onClick={focusInput}>
           <div className="words">
             {words.map((word, index) => (
