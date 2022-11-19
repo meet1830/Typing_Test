@@ -6,7 +6,6 @@ const UpperMenu = ({ countDown }) => {
   
   const updateTime = (e) => {
     setTestTime(e.target.id);
-    // test time will be updated in context testtime state by this
   };
 
   return (
@@ -22,7 +21,6 @@ const UpperMenu = ({ countDown }) => {
         <div className="time" id="60" onClick={(e) => updateTime(e)}>
           60s
         </div>
-        {/* can also pass 15, 30 and 60 in update time function call, () => updateTime(15), () => updateTime(30), etc. */}
       </div>
     </div>
   );

@@ -22,42 +22,32 @@ const TypingBox = () => {
   const [intervalId, setIntervalId] = useState(null);
 
   // to find wpm
-  // can count the correct words typed while refering - query selector it in space logic
-  // other method - can decide at the change of color
-  // going with the second method
   const [correctChars, setCorrectChars] = useState(0);
-
   // to find accuracy
-  // check this when switching between words - at logic space
-  // same logic as above method 1
   const [correctWords, setCorrectWords] = useState(0);
 
-  // the words array will be a state
   const [wordsArray, setWordsArray] = useState(() => {
     return randomWords(100);
-    // can initialize random words with a value like 100 or can add a callback function
   })
 
-  // layer of optimization
-  // usememo - callback func as first parameter and useeffect as second same as useeffect
-  // similar to useEffect - when dependency changes it runs. butt useeffect also runs when the component is mounted, but usememo runs only when it is initialized and offers a bit of optimization on top of it
+  // states for numbers - characters
+  const [incorrectChars, setIncorrectChars] = useState(0);
+  // set incorrect chars in logic for correct and incorrect chars
+  const [extraChars, setExtraChars] = useState(0);
+  // set extra characters in logic for extra characters
+  const [missedChars, setMissedChars] = useState(0);
+
+  // for graph wpm vs time
+  const [graphData, setGraphData] = useState([]);
+  // timer function works every second hence can calculate our data per second from there
+
   const words = useMemo(() => {
     return wordsArray;
-    // this is how wordsarray is initialized
   }, [wordsArray]);
 
-  // also initialize wordspanref using usememo
   const wordSpanRef = useMemo(() => {
-    // dependency is words array so when wordsarray changes, words changes and then wordspanref changes
-    // so wordspanref is not created beforehand only when it changes it is created, so no undefined error 
     return Array(words.length).fill(0).map((i) => createRef(null));
   }, [words]);
-
-  // const wordSpanRef = Array(words.length)
-  //   .fill(0)
-  //   .map((i) => createRef(null));
-
-  // memoization means caching some value so that it does not gets evaluated again. so usememo caches the return value. so we think that some func will run on its own and arbitrarily then we use usememo. so value does not recalculate and saves time
 
   // from reset func
   const resetWordSpanRefClassNames = () => {
@@ -66,9 +56,6 @@ const TypingBox = () => {
         j.className = 'char';
       })
     });
-    // nodelist does not have map function hence array.from. convert it to array
-    // now call this function in reset function
-    // to remove colors
     wordSpanRef[0].current.childNodes[0].className = "char current";
   }
 
@@ -82,16 +69,16 @@ const TypingBox = () => {
     let allChildrenSpans = wordSpanRef[currWordIndex].current.childNodes;
 
     // logic for pressing spacebar - if user enters spacebar
-    // just after declaring allchildrenspans, because will give error - not defined innertext if wrote after comparing function
     if (e.keyCode === 32) {
       // for accuracy
-      // const incorrectChars = wordSpanRef[currWordIndex].current.querySelectorAll('.incorrect');
-      // an array which contains all incorrect chars
-      // dont use this as if user types space in middle of the word then also the word is correct.
       const correctChar = wordSpanRef[currWordIndex].current.querySelectorAll('.correct');
+
+      // calculating incorrect characters for numbers - characters, 
+      // setting missed chars -> total - (correct + incorrect) = missed
+      const incorrectChar = wordSpanRef[currWordIndex].current.querySelectorAll('.incorrect');
+      setMissedChars(missedChars + (allChildrenSpans.length - (incorrectChar.length + correctChar.length)));
+
       if (correctChar.length === allChildrenSpans.length) {
-        // correct typed === total words to type
-        // then update the state
         setCorrectWords(correctWords + 1);
       }
 
@@ -142,6 +129,7 @@ const TypingBox = () => {
     }
 
     // if user does not enter space to go to next word and keeps typing then we need to render in dom what they are typing
+    // logic for typing extra characters - create spans
     if (currCharIndex === allChildrenSpans.length) {
       let newSpan = document.createElement("span");
       newSpan.innerText = e.key;
@@ -152,21 +140,25 @@ const TypingBox = () => {
 
       wordSpanRef[currWordIndex].current.append(newSpan);
       setCurrCharIndex(currCharIndex + 1);
-      return;
 
-      // now when user presses backspace on the extra characters entered then those characters should be removed from dom for that classname 'extra' and writing logic for that in logic for backspace
+      // for numbers - characters - extra
+      setExtraChars(extraChars + 1);
+
+      return;
     }
 
     // compare
+    // logic for incorrect and correct chars
     if (e.key === allChildrenSpans[currCharIndex].innerText) {
       allChildrenSpans[currCharIndex].className = "char correct";
       
       // for wpm
-      // counting correct chars
-      // then through function calculating wpm
       setCorrectChars(correctChars + 1);
     } else {
       allChildrenSpans[currCharIndex].className = "char incorrect";
+
+      // for numbers - characters
+      setIncorrectChars(incorrectChars + 1);
     }
 
     setCurrCharIndex(currCharIndex + 1);
@@ -178,46 +170,30 @@ const TypingBox = () => {
   };
 
   // changing the countdown value
-  // every time test time changes, change the value in countdown
   useEffect(() => {
-    // setCountDown(testTime);
-    // putting this in resetTest function and calling resetTest func here
     resetTest();
   }, [testTime]);
 
   const calculateWPM = () => {
-    // return using the formula
     return Math.round((correctChars / 5) / (testTime / 60));
-    // pass this in the stats as prop
   }
 
   const calculateAccuracy = () => {
-    // currwordindex = here total words typed - if at first index then typed 1 word
     return Math.round((correctWords / currWordIndex) * 100);
   }
 
-  // when clicked on one of the three timers in between a game then the whole thing should reset, colors should go away
   const resetTest = () => {
     setCurrCharIndex(0);
     setCurrWordIndex(0);
     setTestStart(false);
     setTestOver(false);
     // also when clicked on, timer should not automatically start
-    // hence create a state for that and clear setinterval using interval id 
     clearInterval(intervalId);
     setCountDown(testTime);
 
-    // after this just add new words and clear the whole thing
-    // for this whole wordspanref should change and words prop will change
-    // hence becomes complex and hence use usememo here
-    // removing words prop from here and not also not calling words now from app.js
-    // will do this inside this file only and not get it as a prop
     let random = randomWords(100);
     setWordsArray(random);
-    // now words are new every time we click on any timer 
-    // typed styles remain same
-    // we have changed the references but ref classes are still the same. if we change the value then ref is still present at same place. so how to change classnames
-    // for this have to manually iterate over the row span and change the usememo
+    
     resetWordSpanRefClassNames();
   }
 
@@ -232,6 +208,9 @@ const TypingBox = () => {
     inputTextRef.current.focus();
   };
 
+  // things needed for graphdata -> correctchars to calculate wpm, 
+  // inside the timer func we cannot directly access the state because the state value will not change there. so to access the updated state value we use callback func 
+
   const startTimer = () => {
     const intervalId = setInterval(timer, 1000);
 
@@ -239,6 +218,23 @@ const TypingBox = () => {
 
     function timer() {
       setCountDown((prevCountDown) => {
+
+        setCorrectChars((correctChars) => {
+          // correctchars is the updated state value
+          setGraphData((data) => {
+            // data is the prev data the graph data we have till now
+            // time instance, calculate using updated time instance
+            // at 1 second the speed would be correct chars which are typed till 1 second, time instance will be 0 at first second + 1
+            // then calculating wpm with that time
+            // basically calculating time speed at ith second from total test time of n seconds
+            // time instance is the time that has passed fot 1 second it will be 0, for 2 second it will be 1
+            // add 1 to get the current second
+            return [...data, [testTime - prevCountDown, Math.round((correctChars / 5) / ((testTime - prevCountDown + 1) / 60))]];
+          })
+          return correctChars;
+        })
+        // now pass this array in stats componenet at plot it
+
         // to stop the countDown
         if (prevCountDown === 1) {
           clearInterval(intervalId);
@@ -253,21 +249,23 @@ const TypingBox = () => {
 
   return (
     <div>
-      <UpperMenu countDown={countDown} />
-      {testOver ? ( <Stats wpm={calculateWPM()} accuracy={calculateAccuracy()} /> ) : (
-        <div className="type-box" onClick={focusInput}>
-          <div className="words">
-            {words.map((word, index) => (
-              <span className="word" ref={wordSpanRef[index]} key={index}>
-                {word.split("").map((char, idx) => (
-                  <span className="char" key={`char${idx}`}>
-                    {char}
-                  </span>
-                ))}
-              </span>
-            ))}
+      {testOver ? ( <Stats wpm={calculateWPM()} accuracy={calculateAccuracy()} graphData={graphData} correctChars={correctChars} incorrectChars={incorrectChars} extraChars={extraChars} missedChars={missedChars} /> ) : (
+        <>
+          <UpperMenu countDown={countDown} />
+          <div className="type-box" onClick={focusInput}>
+            <div className="words">
+              {words.map((word, index) => (
+                <span className="word" ref={wordSpanRef[index]} key={index}>
+                  {word.split("").map((char, idx) => (
+                    <span className="char" key={`char${idx}`}>
+                      {char}
+                    </span>
+                  ))}
+                </span>
+              ))}
+            </div>
           </div>
-        </div>
+        </>
       )}
 
       <input
