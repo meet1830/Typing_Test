@@ -13,6 +13,7 @@ import {
     Tooltip,
     Legend
 } from 'chart.js';
+import { useTheme } from '../Context/ThemeContext';
 
 // to register at the top of the file
 ChartJS.register (
@@ -26,6 +27,9 @@ ChartJS.register (
 );
 
 const Graph = ({graphData}) => {
+
+    const {theme} = useTheme();
+
   return (
     <div>
         <Line 
@@ -47,7 +51,7 @@ const Graph = ({graphData}) => {
                             // label: "some random values",
                             // label is what the values will be known as
                             label: "wpm",
-                            borderColor: 'gold',
+                            borderColor: theme.title,
                         }
                     ]
                 }

@@ -222,10 +222,6 @@ const TypingBox = () => {
         setCorrectChars((correctChars) => {
           // correctchars is the updated state value
           setGraphData((data) => {
-            // data is the prev data the graph data we have till now
-            // time instance, calculate using updated time instance
-            // at 1 second the speed would be correct chars which are typed till 1 second, time instance will be 0 at first second + 1
-            // then calculating wpm with that time
             // basically calculating time speed at ith second from total test time of n seconds
             // time instance is the time that has passed fot 1 second it will be 0, for 2 second it will be 1
             // add 1 to get the current second

@@ -1,14 +1,21 @@
 import { GlobalStyles } from "./Styles/global";
 import TypingBox from "./Components/TypingBox";
+import Footer from "./Components/Footer";
+import { ThemeProvider } from "styled-components";
+import { useTheme } from "./Context/ThemeContext";
 
 function App() {
+  const {theme} = useTheme();
+
   return (
-    <div className="canvas">
-      <GlobalStyles />
-      <h1 style={{textAlign: "center"}}>Typing Test</h1>
-      <TypingBox />
-      <h1 style={{textAlign: "center"}}>Footer</h1>
-    </div>
+    <ThemeProvider theme={theme} >
+      <div className="canvas">
+        <GlobalStyles />
+        <h1 style={{ textAlign: "center" }}>Typing Test</h1>
+        <TypingBox />
+        <Footer />
+      </div>
+    </ThemeProvider>
   );
 }
 
