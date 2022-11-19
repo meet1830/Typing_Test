@@ -150,7 +150,7 @@ export const GlobalStyles = createGlobalStyle`
         width: 70%;
     }
 
-    .footer {
+    .footer, .header {
         display: flex;
         width: 1000px;
         margin-left: auto;
