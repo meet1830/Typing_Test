@@ -3,12 +3,15 @@ import { Box, Button, TextField } from '@material-ui/core'
 import { auth } from '../firebaseConfig';
 import { useAlert } from '../Context/AlertContext';
 import errorMapping from '../Utils/errorMessages';
+import { useTheme } from '../Context/ThemeContext';
 
 const LoginForm = ({handleClose}) => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
 
     const {setAlert} = useAlert();
+
+    const {theme} = useTheme();
 
     const handleSubmit = () => {
         if (!email || !password) {
@@ -53,7 +56,7 @@ const LoginForm = ({handleClose}) => {
                 display: 'flex',
                 flexDirection: 'column',
                 gap: '20px',
-                backgroundColor: 'white',
+                backgroundColor: 'transparent',
                 padding: '10px',
             }}
         >
@@ -62,6 +65,20 @@ const LoginForm = ({handleClose}) => {
                 type='email' // gives validation for email
                 label='Enter Email' // placeholder
                 onChange={(e) => setEmail(e.target.value)}
+                InputLabelProps={
+                    {
+                        style: {
+                            color: theme.title
+                        }
+                    }
+                }
+
+                // style input font color
+                inputProps={{
+                    style: {
+                        color: theme.title
+                    }
+                }}
             >
                 Email
             </TextField>
@@ -70,13 +87,25 @@ const LoginForm = ({handleClose}) => {
                 type='password'
                 label='Enter password'
                 onChange={(e) => setPassword(e.target.value)}
+                InputLabelProps={
+                    {
+                        style: {
+                            color: theme.title
+                        }
+                    }
+                }
+                inputProps={{
+                    style: {
+                        color: theme.title
+                    }
+                }}
             >
                 Password
             </TextField>
             <Button
                 variant='contained'
                 size='large'
-                style={{backgroundColor: "red"}}
+                style={{backgroundColor: theme.title, color: theme.backgroundColor}}
                 onClick={handleSubmit}
             >
                 Login

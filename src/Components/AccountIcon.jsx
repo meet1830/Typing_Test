@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { AppBar, Modal, Tab, Tabs } from "@mui/material";
-import { makeStyles } from "@material-ui/core";
+import { Box, makeStyles } from "@material-ui/core";
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import LoginForm from "./LoginForm";
 import SignupForm from "./SignupForm";
@@ -11,19 +11,22 @@ import { useAuthState } from "react-firebase-hooks/auth";
 import LogoutIcon from '@mui/icons-material/Logout';
 import { useNavigate } from "react-router-dom";
 import { useAlert } from "../Context/AlertContext";
-// if log in is success then user should be redirect to user page by clicking the accoutn icon and the log out icon should also appear besides it
-// to use this dependency firebase auth hooks will be used
-// it returns an object if the user is logged in or not
-// alternatively, can use auth.currentUser here, if it is not null or undefined then the user is logged in
+
+import GoogleButton from "react-google-button";
+import { signInWithPopup, GoogleAuthProvider } from "firebase/auth";
+import { useTheme } from "../Context/ThemeContext";
 
 const useStyles = makeStyles(() => ({
   modal : {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
+    backdropFilter: 'blur(1.5px)', // apply blur background behind modal when it opens
   },
   box : {
-    width: '400'
+    width: '400',
+    textAlign: 'center',
+    border: '1px solid'
   }
 }))
 
@@ -75,6 +78,33 @@ const AccountIcon = () => {
     }
   }
 
+  const googleProvider = new GoogleAuthProvider();
+  const signInWithGoogle = () => {
+    // so we click on sign in with google a pop up should open
+    // firebase gives that pop up hence import that and also google auth provider that handles authentication
+    // google provider is a class hence create a new object from that
+    signInWithPopup(auth, googleProvider)
+    .then((ok) => {
+      setAlert({
+        open: true,
+        type: 'success',
+        message: 'Logged In'
+      })
+
+      // close modal
+      handleClose();
+    })
+    .catch((err) => {
+      setAlert({
+        open: true,
+        type: 'error',
+        message: 'Google Authentication failed'
+      })
+    })
+  }
+
+  const {theme} = useTheme();
+
   return (
     <div>
         <AccountCircleIcon onClick={handleAccountIconClick} />
@@ -85,13 +115,24 @@ const AccountIcon = () => {
           <div className={classes.box}>
             <AppBar position="static" style={{ backgroundColor: 'transparent' }} >
               <Tabs value={value} onChange={handleValueChange} variant="fullWidth" >
-                <Tab label="login" style={{color: 'white'}} ></Tab>
-                <Tab label="signup" style={{color: 'white'}} ></Tab>
+                <Tab label="login" style={{color: theme.title}} ></Tab>
+                <Tab label="signup" style={{color: theme.title}} ></Tab>
               </Tabs>
             </AppBar>
 
             {value === 0 && <LoginForm handleClose={handleClose} /> }
             {value === 1 && <SignupForm handleClose={handleClose} /> }
+
+            <Box >
+              <span style={{display: 'block', padding: '1rem'}} >OR</span>
+              <GoogleButton 
+                style={{
+                  width: "100%"
+                }}
+                onClick={signInWithGoogle}
+              />
+            </Box>
+
           </div>
         </Modal>
     </div>
