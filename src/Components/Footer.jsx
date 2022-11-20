@@ -4,33 +4,41 @@ import { themeOptions } from "../Styles/theme";
 import { useTheme } from "../Context/ThemeContext";
 
 const Footer = () => {
-  const { setTheme } = useTheme();
+  const { setTheme, defaultTheme, theme } = useTheme();
 
   const handleThemeChange = (e) => {
-    // console.log(e.value);
-    /*
-        -> when we select red theme
-         {label: 'Red Theme', background: 'red', title: 'white', typeBoxText: 'blue', stats: 'purple'}
-        
-        -> if select dark theme then dark will log
-        -> if just console.log(e) then whole object will log, for that theme
-        -> this happens automatically for react select 
-    */
-
     setTheme(e.value);
+
+    // saving the theme to local storage
+    // ls a hashmap with key and value pair
+    // here store data only in form of strings
+    localStorage.setItem('theme', JSON.stringify(e.value));
+
+    // now fetch it in context to persist it with reload
   };
 
   return (
     <div className="footer">
       <div className="footer-links">Links</div>
       <div className="theme-options">
-        {/* selector - can also implement selection using material ui but a little complex simpler for react select lib */}
         <Select
           options={themeOptions}
-          // will have a button here for select. In options, takes an array and automatically maps the labels and values inside the array. the selected option by the user - its value from the object in the array will be passed to the onchange function
           menuPlacement="top"
-          // if the length of the selection table becomes large and goes beyond screen the browser will place a scrollbar. but through this option we can make the menu to not appear below the select button but above it where there is more space
           onChange={handleThemeChange}
+          
+          // adding default value in the selector options so that it does not remain blank
+          // added default theme in the theme context
+          // pass object here
+          defaultValue={{ value: defaultTheme.value, label: defaultTheme.label }}
+
+          // now styling the select component 
+          // imported theme from usetheme context
+          // in documentation of select component, the control and menu are given different styling options. here destructuring the styling object and adding the property to change the value that we want
+          styles = {{
+            control: (styles) => ({...styles, backgroundColor: theme.background }), 
+            menu: (styles) => ({...styles, backgroundColor: theme.background })
+          }}
+          // hence if using any third party components then have to read docs to understand styling. normal css dont work there. same for mui components
         />
       </div>
     </div>

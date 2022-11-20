@@ -8,13 +8,15 @@ import { themeOptions } from "../Styles/theme";
 const themeContext = createContext();
 
 export const ThemeContextProvider = ({children}) => {
-    const defaultTheme = themeOptions[0].value;
-    // first option of the export array is the default theme    
+    // if local storage contains theme then set that theme else set default theme
+    const defaultTheme = (JSON.parse(localStorage.getItem('theme')) || themeOptions[0].value );
+
     const [theme, setTheme] = useState(defaultTheme);
     
     const values = {
         theme, 
-        setTheme
+        setTheme,
+        defaultTheme
     };
 
     return (<ThemeContext.Provider value={values} >{children}</ThemeContext.Provider>)
