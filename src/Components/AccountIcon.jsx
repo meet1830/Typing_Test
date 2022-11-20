@@ -10,6 +10,7 @@ import { useAuthState } from "react-firebase-hooks/auth";
 
 import LogoutIcon from '@mui/icons-material/Logout';
 import { useNavigate } from "react-router-dom";
+import { useAlert } from "../Context/AlertContext";
 // if log in is success then user should be redirect to user page by clicking the accoutn icon and the log out icon should also appear besides it
 // to use this dependency firebase auth hooks will be used
 // it returns an object if the user is logged in or not
@@ -47,10 +48,17 @@ const AccountIcon = () => {
   // the user object will have a lot of information like users metadata, email, which theme, if user has any profile picture
   // console.log(user);
 
+  const {setAlert} = useAlert();
+
   const logout = () => {
     auth.signOut()
     .then((ok) => {
-      alert("Logged out");
+      // alert("Logged out");
+      setAlert({
+        open: true,
+        type: 'success',
+        message: 'Logged Out'
+      });
     })
     .catch((err) => {
       alert('Not able to log out');

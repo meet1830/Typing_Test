@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import { Box, Button, TextField } from "@material-ui/core";
 import {auth} from "../firebaseConfig";
+import errorMapping from "../Utils/errorMessages";
+import { useAlert } from "../Context/AlertContext";
 
 const SignupForm = ({handleClose}) => {
   // can also use refs instead of state to implement form functionality
@@ -8,14 +10,26 @@ const SignupForm = ({handleClose}) => {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState('');
 
+  const {setAlert} = useAlert();
+
   const handleSubmit = () => {
     if (!email || !password || !confirmPassword) {
-      alert("Enter all details");
+      // alert("Enter all details");
+      setAlert({
+        open: true,
+        type: 'warning',
+        message: 'Please enter all details'
+      })
       return;
     }
 
     if (password != confirmPassword) {
-      alert("Password mismatch");
+      // alert("Password mismatch");
+      setAlert({
+        open: true,
+        type: 'warning',
+        message: 'Password Mismatch'
+      })
       return;
     }
 
@@ -25,16 +39,31 @@ const SignupForm = ({handleClose}) => {
     // function returns a promise
     auth.createUserWithEmailAndPassword(email, password)
     .then((ok) => {
-      alert('User created');
+      // alert('User created');
+      setAlert({
+        open: true,
+        type: 'success',
+        message: 'Account created'
+      })
 
       // we want to close the modal once user is created, hence brought handleclose function from accounticon as prop
       handleClose();
     })
     .catch((err) => {
-      alert("not able to create account");
+      // alert("not able to create account");
       // here if user is already created and again tries to signup then will go here
       // or password is very weak -> less than 6 characters
       // for all such cases firebase console logs the error object
+
+      // alert(errorMapping[err.code] || "Some error occured");
+      // if error is not defined in mapping then show second message
+
+      // using alert component defined to show errors
+      setAlert({
+        open: true,
+        type: 'error',
+        message: errorMapping[err.code] || "Some error occured",
+      })
     })
     
   };
