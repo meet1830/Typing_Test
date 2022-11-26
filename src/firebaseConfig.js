@@ -4,6 +4,9 @@ import firebase from 'firebase/compat/app';
 // import authentication for login signup
 import 'firebase/compat/auth';
 
+// for database
+import 'firebase/compat/firestore';
+
 // only these variables are visible in github and not information
 const firebaseConfig = {
     apiKey: process.env.REACT_APP_API_KEY,
@@ -22,4 +25,7 @@ const firebaseApp = firebase.initializeApp(firebaseConfig);
 // this object will enable signup and login part
 const auth = firebase.auth();
 
-export {auth};
+// for db
+const db = firebaseApp.firestore();
+
+export {auth, db};

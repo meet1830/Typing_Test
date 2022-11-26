@@ -1,5 +1,8 @@
-import React from 'react'
+import React, { useEffect } from 'react'
+import { auth, db } from '../firebaseConfig';
 import Graph from './Graph'
+import { useAuthState } from 'react-firebase-hooks/auth';
+import { useAlert } from '../Context/AlertContext';
 
 const Stats = ({wpm, accuracy, graphData, correctChars, incorrectChars, extraChars, missedChars}) => {
 
@@ -11,6 +14,61 @@ const Stats = ({wpm, accuracy, graphData, correctChars, incorrectChars, extraCha
       return i;
     }
   })
+
+  const [user] = useAuthState(auth);
+  const {setAlert} = useAlert(); 
+
+  // pushing data to firestore
+  const pushResultsToDB = async() => {
+    // need reference to the results collection in our database
+    const resultsRef = db.collection('Results');
+    
+    // getting userid of the logged in user
+    const {uid} = auth.currentUser;
+
+    // if accuracy comes NAN, then the test is considered invalid
+    if (!isNaN(accuracy)) {
+      // push results to db
+      // the document that we create here in resultsRef that will be added to db
+      await resultsRef.add({
+        userId: uid,
+        wpm: wpm,
+        accuracy: accuracy,
+        characters: `${correctChars}/${incorrectChars}/${missedChars}/${extraChars}`,
+        timeStamp: new Date(),
+        // tells when the test was taken
+      })
+      .then((res) => {
+        setAlert({
+          open: true,
+          type: 'success',
+          message: 'Result saved',
+        });
+      });
+    } else {
+      setAlert({
+        open: true,
+        type: 'error',
+        message: 'Invalid test'
+      })
+    }
+
+  }
+
+  // if the component is rendering - useeffect then only have to run above function
+  useEffect(() => {
+    // if user is logged in then only run pushresultstodb function
+    if (user) {
+      pushResultsToDB();
+    } else {
+      // give alert - log in or signup to save results
+      setAlert({
+        open: true,
+        type: 'warning',
+        message: 'Login to save results!'
+      });
+    }
+  }, []);
 
   return (
     <div className="stats-box">
