@@ -4,24 +4,26 @@ import ErrorPage from "./Pages/ErrorPage";
 import HomePage from "./Pages/HomePage";
 import UserPage from "./Pages/UserPage";
 import Alert from "./Components/Alert";
+import { ThemeProvider } from "styled-components";
+import { GlobalStyles } from "./Styles/global";
+import { useTheme } from './Context/ThemeContext';
 
 function App() {
-  // enabling routing hence home page consists of all the things that app.js, (have not made the user page till now) consists hence copy pasting the contents there. 
-  // now implement routing here
-
+  const { theme } = useTheme();
   return (
-    <>
-    <Alert />
-    {/* alert will appear at the top of any component hence placed at the top of the whole application */}
-    <Routes>
-      <Route path="/" element={<HomePage />} ></Route>
-      <Route path="/user" element={<UserPage />} ></Route>
+      <ThemeProvider theme={theme}>
+      {/* shifting themes from homepage to app.js as want to now apply themes to userpage also hence theme need to be accessible in the whole app */}
+        <GlobalStyles />
+        <Alert />
+        <Routes>
+          <Route path="/" element={<HomePage />}></Route>
+          <Route path="/user" element={<UserPage />}></Route>
 
-      {/* not used in this project */}
-      <Route path="/user/:id" element={<DynamicRoute />} ></Route>
-      <Route path="*" element={<ErrorPage />} ></Route>
-    </Routes>
-    </>
+          {/* not used in this project */}
+          <Route path="/user/:id" element={<DynamicRoute />}></Route>
+          <Route path="*" element={<ErrorPage />}></Route>
+        </Routes>
+      </ThemeProvider>
   );
 }
 

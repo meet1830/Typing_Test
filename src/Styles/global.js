@@ -12,6 +12,12 @@ export const GlobalStyles = createGlobalStyle`
         color: ${({theme}) => theme.title};
         transition: all 0.25s linear;
         // transition for anything that happens in the body
+        overflow-y: scroll;
+    }
+
+    body::-webkit-scrollbar {
+        display: none;
+        // hiding the scroll bar in the browser but scrolling ability present
     }
 
     .canvas {
@@ -157,5 +163,58 @@ export const GlobalStyles = createGlobalStyle`
         margin-right: auto;
         justify-content: space-between;
         height: 60px;
+    }
+
+    .result-graph, .table {
+        width: 1000px;
+        margin: auto;
+    }
+
+    .user-profile {
+        width: 1000px;
+        margin: auto;
+        display: flex;
+        min-height: 15rem;
+        border-radius: 30px;
+        background: ${({theme}) => theme.typeBoxText};
+    }
+
+
+    .user {
+        display: flex;
+        width: 50%;
+        justify-content: center;
+        margin-top: 30px;
+        margin-bottom: 30px;
+        padding: 1rem;
+        border-right: 2px solid;
+    }
+
+    .picture {
+        width: 50%;
+    }
+
+    .info {
+        width: 50%;
+        margin-top: 1rem;
+        font-size: 1.5rem;
+        text-align: center;
+        padding: 1rem;
+    }
+
+    .total-times {
+        width: 50%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-size: 3rem;
+    }
+
+    .center-of-screen {
+        height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
     }
 `;

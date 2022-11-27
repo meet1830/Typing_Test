@@ -1,5 +1,4 @@
 import {
-  CircularProgress,
   Table,
   TableBody,
   TableCell,
@@ -7,19 +6,25 @@ import {
   TableHead,
   TableRow,
 } from "@mui/material";
+import { CircularProgress } from "@material-ui/core";
 import React, { useState } from "react";
 import { useEffect } from "react";
-import { useAuthState } from 'react-firebase-hooks/auth';
+import { useAuthState } from "react-firebase-hooks/auth";
 import { auth, db } from "../firebaseConfig";
 import Graph from "../Components/Graph";
+import { useTheme } from "../Context/ThemeContext";
+import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 
 const UserPage = () => {
   const [data, setData] = useState([]);
-
   const [graphData, setGraphData] = useState([]);
-
-  // when reloading the page to display results the component renders instantly but the data from firebase takes some time to come. hence received error that user is null. for that firebase provides the loading state of firebase. use this loading state with useeffect to display loading message
   const [user, loading] = useAuthState(auth);
+
+  // notice that even after loading it takes some time
+  // creating a state for that, removing the circular loading only when both the states are done
+  const [dataLoading, setDataLoading] = useState(true);
+
+  const { theme } = useTheme();
 
   const fetchUserData = () => {
     const resultRef = db.collection("Results");
@@ -30,23 +35,14 @@ const UserPage = () => {
     let tempGraphData = [];
 
     const { uid } = auth.currentUser;
-    // where function given by firebase. we can put conditions for parameters of our db. takes two arguments (parameter, condition)
-    // it will return all documents if the condition is satisfied. hence not fetching all the results and put into an array and then search on it. hence security is not breached
-    // get function to fetch the documents. returns an array
-    // snapshot naming convention
+
     resultRef
       .where("userId", "==", uid)
-      // also need to sort the table data order by function given by firebase
-      // the indexes are required because without them the sorting operation requires a lot of computation, but with indexes they become very fast
-      // it assigns index to every document and using it makes the sorting fast
-      .orderBy('timeStamp', 'desc')
+      .orderBy("timeStamp", "desc")
       .get()
       .then((snapshot) => {
         // console.log(snapshot);
         snapshot.docs.forEach((doc) => {
-          // doc function provided by firebase will return the actual data json object that we have in db
-          // doc is the snapshot and not the actual data. to have the data have to call data function
-          // destructured so that there is no referencing issue
           tempData.push({ ...doc.data() });
 
           // timestamp on x axis, wpm on y axis
@@ -54,9 +50,11 @@ const UserPage = () => {
         });
         setData(tempData);
         setGraphData(tempGraphData.reverse());
-        // reversing graph data to show earlier tests first closer to origin and recent tests after wards 
+        // reversing graph data to show earlier tests first closer to origin and recent tests after wards
+        setDataLoading(false);
       });
-    console.log("tempdata", tempData);
+    // console.log("tempdata", tempData);
+
   };
 
   useEffect(() => {
@@ -65,38 +63,83 @@ const UserPage = () => {
     }
   }, [loading]);
 
-  if (loading) {
-    // return <h1>Loading...</h1>
-    return (<CircularProgress size={200} />);
+  if (loading || dataLoading) {
+    return (
+      <div className="center-of-screen">
+        <CircularProgress size={200} color={theme.title} />
+      </div>
+    );
   }
 
   return (
-    // applied canvas class which is predefined for grid of 3 rows for homepage
     <div className="canvas">
+      <div className="user-profile">
+        <div className="user">
+          <div className="picture">
+            {/* apply display block first then can only use transform, dont know if the icon is span */}
+            <AccountCircleIcon
+              style={{
+                display: "block",
+                transform: "scale(6)",
+                margin: "auto",
+                marginTop: "3.5rem",
+              }}
+            />
+          </div>
+          <div className="info">
+            <div className="email">{user.email}</div>
+            <div className="joined-on">{user.metadata.creationTime}</div>
+          </div>
+        </div>
+        <div className="total-times">
+          <span>Total Test Taken - {data.length}</span>
+        </div>
+      </div>
 
-      <Graph graphData={graphData} type='date' />
+      <div className="result-graph">
+        <Graph graphData={graphData} type="date" />
+      </div>
 
       <div className="table">
-        {/* using material ui components to make table */}
-        <TableContainer>
+        <TableContainer style={{ maxHeight: "30rem" }}>
           <Table>
             <TableHead>
               <TableRow>
-                <TableCell>WPM</TableCell>  
-                <TableCell>Accuracy</TableCell>
-                <TableCell>Characters</TableCell>
-                <TableCell>Date</TableCell>
+                <TableCell style={{ color: theme.title, textAlign: "center" }}>
+                  WPM
+                </TableCell>
+                <TableCell style={{ color: theme.title, textAlign: "center" }}>
+                  Accuracy
+                </TableCell>
+                <TableCell style={{ color: theme.title, textAlign: "center" }}>
+                  Characters
+                </TableCell>
+                <TableCell style={{ color: theme.title, textAlign: "center" }}>
+                  Date
+                </TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
-              {/* populating table rows using map */}
               {data.map((i) => (
                 <TableRow>
-                  <TableCell>{i.wpm}</TableCell>
-                  <TableCell>{i.accuracy}</TableCell>
-                  <TableCell>{i.characters}</TableCell>
-                  <TableCell>
-                    {/* firebase stores date in the timestamp type which is not supported */}
+                  <TableCell
+                    style={{ color: theme.title, textAlign: "center" }}
+                  >
+                    {i.wpm}
+                  </TableCell>
+                  <TableCell
+                    style={{ color: theme.title, textAlign: "center" }}
+                  >
+                    {i.accuracy}
+                  </TableCell>
+                  <TableCell
+                    style={{ color: theme.title, textAlign: "center" }}
+                  >
+                    {i.characters}
+                  </TableCell>
+                  <TableCell
+                    style={{ color: theme.title, textAlign: "center" }}
+                  >
                     {i.timeStamp.toDate().toString()}
                   </TableCell>
                 </TableRow>
