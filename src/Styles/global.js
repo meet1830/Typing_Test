@@ -161,13 +161,39 @@ export const GlobalStyles = createGlobalStyle`
         width: 70%;
     }
 
-    .footer, .header {
+    .header {
         display: flex;
         width: 1000px;
         margin-left: auto;
         margin-right: auto;
         justify-content: space-between;
         height: 60px;
+    }
+
+    .footer {
+        display: flex;
+        flex-direction: column;
+        width: 1000px;
+        margin-left: auto;
+        margin-right: auto;
+        justify-content: space-between;
+        height: 60px;
+        align-items: center;
+    }
+
+    .actual-footer {
+        display: flex;
+        justify-content: space-between;
+        width: 1000px;
+    }
+
+    .hint {
+        kbd {
+            background-color: ${({theme}) => theme.title};
+            color: ${({theme}) => theme.background};
+            padding: 2.5px 5px;
+            border-radius: 3px;
+        }
     }
 
     .result-graph, .table {
@@ -221,5 +247,9 @@ export const GlobalStyles = createGlobalStyle`
         align-items: center;
         justify-content: center;
         text-align: center;
+    }
+
+    .instruction {
+        color: ${({theme}) => theme.title};
     }
 `;

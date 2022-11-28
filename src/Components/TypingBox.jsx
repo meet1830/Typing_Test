@@ -1,3 +1,4 @@
+import { Dialog, DialogTitle } from "@material-ui/core";
 import React, { useMemo } from "react";
 import { useState } from "react";
 import { createRef } from "react";
@@ -54,6 +55,9 @@ const TypingBox = () => {
   const [graphData, setGraphData] = useState([]);
   // timer function works every second hence can calculate our data per second from there
 
+  // for dialog box
+  const [openDialog, setOpenDialog] = useState(false);
+
   const words = useMemo(() => {
     return wordsArray;
   }, [wordsArray]);
@@ -73,6 +77,18 @@ const TypingBox = () => {
   }
 
   const handleOnKeyDown = (e) => {
+    // logic for tab key - to open dialog box
+    if (e.keyCode === 9) {
+      // when test started and then pressed tab, the timer should stop
+        if (testStart) {
+          clearInterval(intervalId);
+        }
+      // when press tab the focus goes to next input by default. hence
+      e.preventDefault();
+      setOpenDialog(true);
+      return;
+    } 
+
     if (!testStart) {
       startTimer();
       setTestStart(true);
@@ -227,6 +243,14 @@ const TypingBox = () => {
       setWordsArray(random);
     }
     resetWordSpanRefClassNames();
+
+    // update reset test with the new states that are created
+    setGraphData([]);
+    setCorrectChars(0);
+    setIncorrectChars(0);
+    setCorrectWords(0);
+    setMissedChars(0);
+    setExtraChars(0);
   }
 
   useEffect(() => {
@@ -273,11 +297,60 @@ const TypingBox = () => {
     }
   };
 
+  // dialog box
+  // all the features that will get triggered on key press will go here
+  const handleDialogEvents = (e) => {
+    // logic for space
+    if (e.keyCode === 32) {
+      // prevent whatever the default behavior is
+      e.preventDefault();
+      redoTest();
+      // different from reset function, here the words generated should be same but certain thing should reset
+      // words span ref will go blank
+      setOpenDialog(false);
+      return;
+    }
+
+    // tab + enter logic
+    if (e.keyCode === 9 || e.keyCode === 13) {
+      e.preventDefault();
+      resetTest();
+      setOpenDialog(false);
+      return;
+    }
+
+    // if any other things 
+    e.preventDefault();
+    setOpenDialog(false);
+    // just start timer from countdown hence gives impression that test restarted
+    startTimer();
+  }
+
+  const redoTest = () => {
+    // same functionality as reset test just the words generation will not happen
+    setCurrCharIndex(0);
+    setCurrWordIndex(0);
+    setTestStart(false);
+    setTestOver(false);
+    clearInterval(intervalId);
+    setCountDown(testTime);
+    if (testMode === 'words') {
+      setCountDown(180);
+    }
+    resetWordSpanRefClassNames();
+    setGraphData([]);
+    setCorrectChars(0);
+    setIncorrectChars(0);
+    setCorrectWords(0);
+    setMissedChars(0);
+    setExtraChars(0);
+  }
+
   return (
     <div>
       {testOver ? ( <Stats wpm={calculateWPM()} accuracy={calculateAccuracy()} graphData={graphData} correctChars={correctChars} incorrectChars={incorrectChars} extraChars={extraChars} missedChars={missedChars} /> ) : (
         <>
-          <UpperMenu countDown={countDown} />
+          <UpperMenu countDown={countDown} currWordIndex={currWordIndex} />
           <div className="type-box" onClick={focusInput}>
             <div className="words">
               {words.map((word, index) => (
@@ -300,6 +373,32 @@ const TypingBox = () => {
         ref={inputTextRef}
         onKeyDown={(e) => handleOnKeyDown(e)}
       />
+
+      {/* to open dialog box to implement features triggered with keyboard keys
+        difference between a modal and a dialog - in dialog cannot put input fields etc, all textalign is centered by default in dialog box and dialog box opens up in the middle of the screen 
+      */}
+      <Dialog
+        open={openDialog} 
+        onKeyDown={handleDialogEvents}
+        style={{
+          backdropFilter: 'blur(2px)'
+        }}
+        // separate property to change background of dialog
+        PaperProps={{
+          style:{
+            backgroundColor: 'transparent',
+            // remove the shadow that appears behind the text
+            boxShadow: 'none'
+          }
+        }}
+      >
+        <DialogTitle>
+          <div className="instruction">Press space to redo</div>
+          <div className="instruction">Press tab/enter to restart</div>
+          <div className="instruction">Press any other key to exit</div>
+        </DialogTitle>
+      </Dialog>
+
     </div>
   );
 };
