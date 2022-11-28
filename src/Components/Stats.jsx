@@ -3,8 +3,9 @@ import { auth, db } from '../firebaseConfig';
 import Graph from './Graph'
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { useAlert } from '../Context/AlertContext';
+import RestartAltIcon from '@mui/icons-material/RestartAlt';
 
-const Stats = ({wpm, accuracy, graphData, correctChars, incorrectChars, extraChars, missedChars}) => {
+const Stats = ({wpm, accuracy, graphData, correctChars, incorrectChars, extraChars, missedChars, resetTest}) => {
 
   //  to counter multiple entries of same value in x axis time, use sets
   let timeSet = new Set();
@@ -78,9 +79,10 @@ const Stats = ({wpm, accuracy, graphData, correctChars, incorrectChars, extraCha
             <div className="title">Accuracy</div>
             <div className="subtitle">{accuracy}%</div>
             <div className="title">Characters</div>
-            {/* <div className="subtitle">30/2/3/3</div> */}
             {/* typed chars/incorrect/extra/missed */}
             <div className="subtitle">{correctChars}/{incorrectChars}/{missedChars}/{extraChars}</div>
+
+            <RestartAltIcon onClick={resetTest} className='reset-btn' />
         </div>
         <div className="right-stats">
             {/* <Graph graphData={graphData} /> */}

@@ -252,4 +252,11 @@ export const GlobalStyles = createGlobalStyle`
     .instruction {
         color: ${({theme}) => theme.title};
     }
+
+    .reset-btn {
+        transform: scale(2);
+        display: block;
+        margin: auto;
+        margin-top: 3rem;
+    }
 `;

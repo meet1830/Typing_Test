@@ -348,7 +348,7 @@ const TypingBox = () => {
 
   return (
     <div>
-      {testOver ? ( <Stats wpm={calculateWPM()} accuracy={calculateAccuracy()} graphData={graphData} correctChars={correctChars} incorrectChars={incorrectChars} extraChars={extraChars} missedChars={missedChars} /> ) : (
+      {testOver ? ( <Stats wpm={calculateWPM()} accuracy={calculateAccuracy()} graphData={graphData} correctChars={correctChars} incorrectChars={incorrectChars} extraChars={extraChars} missedChars={missedChars} resetTest={resetTest} /> ) : (
         <>
           <UpperMenu countDown={countDown} currWordIndex={currWordIndex} />
           <div className="type-box" onClick={focusInput}>
