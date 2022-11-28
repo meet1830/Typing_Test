@@ -12,13 +12,22 @@ var randomWords = require('random-words');
 const TypingBox = () => {
   const [currWordIndex, setCurrWordIndex] = useState(0);
   const [currCharIndex, setCurrCharIndex] = useState(0);
-  const [countDown, setCountDown] = useState(15);
+
+  const {testTime, testMode, testWords} = useTestMode();
+  
+  const [countDown, setCountDown] = useState(() => {
+    // if implement according to words then no need for countdown. but then wpm and all other is being calculated based on time hence have to rewrite the whole logic. hence when there is words mode initialize the time with a big number
+    if (testMode === 'words') {
+      return 180;
+    } else {
+      return testTime;
+    }
+  });
   const [testStart, setTestStart] = useState(false);
   const [testOver, setTestOver] = useState(false);
 
   const inputTextRef = useRef(null);
 
-  const {testTime} = useTestMode();
   const [intervalId, setIntervalId] = useState(null);
 
   // to find wpm
@@ -27,6 +36,10 @@ const TypingBox = () => {
   const [correctWords, setCorrectWords] = useState(0);
 
   const [wordsArray, setWordsArray] = useState(() => {
+    // type number of words mode
+    if (testMode === 'words') {
+      return randomWords(testWords);
+    }
     return randomWords(100);
   })
 
@@ -70,6 +83,15 @@ const TypingBox = () => {
 
     // logic for pressing spacebar - if user enters spacebar
     if (e.keyCode === 32) {
+      
+      // game over logic for words mode
+      // for words mode when user enters spacebar after the last word, then the test should finish
+      if (currWordIndex === wordsArray.length - 1) {
+        clearInterval(intervalId);
+        setTestOver(true);
+        return;
+      }
+
       // for accuracy
       const correctChar = wordSpanRef[currWordIndex].current.querySelectorAll('.correct');
 
@@ -172,10 +194,15 @@ const TypingBox = () => {
   // changing the countdown value
   useEffect(() => {
     resetTest();
-  }, [testTime]);
+  }, [testTime, testMode, testWords]);
 
   const calculateWPM = () => {
-    return Math.round((correctChars / 5) / (testTime / 60));
+    // return Math.round((correctChars / 5) / (testTime / 60));
+
+    // will not work for words mode as testtime is different
+    // graph data is filled every second, hence can calculate wpm through the last entry in graph data for time
+    // [0] for saving it as first index, 0th index having the time and at first index having wpm. this was structuring of graph data. and graph data was starting from 0 hence added + 1 to get the total time for test completion
+    return Math.round((correctChars / 5) / ((graphData[graphData.length - 1][0] + 1) / 60));
   }
 
   const calculateAccuracy = () => {
@@ -191,9 +218,14 @@ const TypingBox = () => {
     clearInterval(intervalId);
     setCountDown(testTime);
 
-    let random = randomWords(100);
-    setWordsArray(random);
-    
+    if (testMode === 'words') {
+      let random = randomWords(testWords);
+      setWordsArray(random);
+      setCountDown(180);
+    } else {  
+      let random = randomWords(100);
+      setWordsArray(random);
+    }
     resetWordSpanRefClassNames();
   }
 
@@ -220,16 +252,14 @@ const TypingBox = () => {
       setCountDown((prevCountDown) => {
 
         setCorrectChars((correctChars) => {
-          // correctchars is the updated state value
+          // the formula will not run when testmode is words as prevcountdown is 180 and testTime will still be 15, 30, 60 sec. hence will go to negative
+          // hence implement start time according to mode and make change in formula
           setGraphData((data) => {
-            // basically calculating time speed at ith second from total test time of n seconds
-            // time instance is the time that has passed fot 1 second it will be 0, for 2 second it will be 1
-            // add 1 to get the current second
-            return [...data, [testTime - prevCountDown, Math.round((correctChars / 5) / ((testTime - prevCountDown + 1) / 60))]];
+            const startTime = (testMode === 'words') ? 180 : testTime;
+            return [...data, [startTime - prevCountDown, Math.round((correctChars / 5) / ((startTime - prevCountDown + 1) / 60))]];
           })
           return correctChars;
         })
-        // now pass this array in stats componenet at plot it
 
         // to stop the countDown
         if (prevCountDown === 1) {

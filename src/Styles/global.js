@@ -115,15 +115,20 @@ export const GlobalStyles = createGlobalStyle`
         cursor: none;
     }
 
-    .time-modes {
+    .time-modes, .word-mode {
         display: flex;
     }
 
-    .time {
+    .time, .no-of-words {
         margin-right: 15px;
     }
 
-    .time:hover {
+    .time:hover, .no-of-words:hover {
+        color: ${({theme}) => theme.title};
+        cursor: pointer;
+    }
+
+    .mode:hover {
         color: ${({theme}) => theme.title};
         cursor: pointer;
     }
