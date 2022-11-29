@@ -135,6 +135,17 @@ const TypingBox = () => {
       wordSpanRef[currWordIndex + 1].current.childNodes[0].className =
         "char current";
 
+      // auto scrolling feature
+      // first part of condition if we are at the first index(not typing) then no need to scroll. 
+      // second part comparing the length of the curr word from the left side of screen with the length to that of the next word after it. 
+      // hence if the line is same, then the next word length will always be greater than the current word hence condition will false.
+      // but when the last word being the current word, the conditon will work as the next word is the first word of the next line and hence it will scroll
+      // at a particular position calling scroll into view then it will be offsetted to the top of the div. hence scroll takes place 
+      if (currWordIndex != 0 && wordSpanRef[currWordIndex + 1].current.offsetLeft < wordSpanRef[currWordIndex].current.offsetLeft) {
+        // if condition then scroll 
+        wordSpanRef[currWordIndex].current.scrollIntoView();
+      }
+
       setCurrWordIndex(currWordIndex + 1);
       setCurrCharIndex(0);
 

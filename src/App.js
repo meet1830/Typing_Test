@@ -7,6 +7,7 @@ import Alert from "./Components/Alert";
 import { ThemeProvider } from "styled-components";
 import { GlobalStyles } from "./Styles/global";
 import { useTheme } from './Context/ThemeContext';
+import ComparePage from "./Pages/ComparePage";
 
 function App() {
   const { theme } = useTheme();
@@ -18,10 +19,11 @@ function App() {
         <Routes>
           <Route path="/" element={<HomePage />}></Route>
           <Route path="/user" element={<UserPage />}></Route>
+          <Route path="/compare/:username" element={<ComparePage />} ></Route>
 
           {/* not used in this project */}
-          <Route path="/user/:id" element={<DynamicRoute />}></Route>
-          <Route path="*" element={<ErrorPage />}></Route>
+          {/* <Route path="/user/:id" element={<DynamicRoute />}></Route>
+          <Route path="*" element={<ErrorPage />}></Route> */}
         </Routes>
       </ThemeProvider>
   );
