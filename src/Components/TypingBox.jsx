@@ -253,7 +253,6 @@ const TypingBox = () => {
       let random = randomWords(100);
       setWordsArray(random);
     }
-    resetWordSpanRefClassNames();
 
     // update reset test with the new states that are created
     setGraphData([]);
@@ -262,6 +261,8 @@ const TypingBox = () => {
     setCorrectWords(0);
     setMissedChars(0);
     setExtraChars(0);
+
+    resetWordSpanRefClassNames();
   }
 
   useEffect(() => {
