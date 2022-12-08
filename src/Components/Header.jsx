@@ -6,7 +6,7 @@ const Header = () => {
   return (
     <div className="header">
       <div className="logo" style={{display: "flex"}} >
-        <span style={{display: "block", marginRight: "6px"}} >LOGO</span>
+        <span style={{display: "block", marginRight: "10px"}} >Typing Test</span>
         <CompareButton />
       </div>
       <div className="icons">

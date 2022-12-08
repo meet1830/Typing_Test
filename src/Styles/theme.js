@@ -24,8 +24,26 @@ const luna = {
     stats: '#F67599',
 }
 
+const white = {
+    label: 'white',
+    background: 'white',
+    title: 'black',
+    typeBoxText: 'black',
+    stats: 'black'
+}
+
+const darkYellow = {
+    label: 'Dark Yellow',
+    background: 'black',
+    title: 'yellow',
+    typeBoxText: 'yellow',
+    stats: 'yellow'
+}
+
 export const themeOptions = [
     {value: darkTheme, label: 'Dark'},
     {value: redTheme, label: 'Red Theme'},
-    {value: luna, label: 'Luna'}
+    {value: luna, label: 'Luna'},
+    {value: white, label: 'White'},
+    {value: darkYellow, label: 'Dark Yellow'},
 ]
